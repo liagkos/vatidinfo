@@ -1,0 +1,15 @@
+{
+  "name": "liagkos/vatidinfo",
+  "description": "Retrieve greek business iformation from tax registry",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Athanasios Liagkos",
+      "email": "me@nasos.work"
+    }
+  ],
+  "autoload": {
+    "psr-4": { "Liagkos\\Taxis\\": "src/" }
+  }
+}
