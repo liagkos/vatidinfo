@@ -290,6 +290,8 @@ class Vatidinfo
      */
     private function formatActivity($activity, $separator)
     {
+        // Fix for activities starting with 0, not displayed in (int) format
+        $activity = str_pad($activity, 8, '0', STR_PAD_LEFT);
         return substr($activity, 0, 2) . $separator .
             substr($activity, 2,2) . $separator .
             substr($activity, 4,2) . $separator .

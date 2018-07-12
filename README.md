@@ -115,7 +115,7 @@ $reply = $client->exec($params);
             {
               "code":5200000,
               "descr":"ΕΞΟΡΥΞΗ ΛΙΓΝΙΤΗ",
-              "formatted":"52.00.00.0"
+              "formatted":"05.20.00.00"
             },
             {
               "code":35111000,
