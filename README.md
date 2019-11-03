@@ -46,7 +46,9 @@ $reply = $client->exec($params);
 - afmFrom: VAT ID of the final user using the service. If omitted, the service will think that the user is the user who has logged in to the service in the construcor `(default)`. Otherwise, if a person or a company has **authorised** the user to make queries on their behalf (a company by itself is not allowed to make queries), then you **must** pass here the VAT ID of the authorisee.
 - lookDate: Reference date in format YYYY-MM-DD. If omitted, the service will just return the latest information `(default)`.
 - separator: Activities are additionally formatted in groups of 2 digits separated by this separator. If no value is passed, a dot will be used `(default)` like 11.22.33.44.
-- type: `Default` reply type is `json` formatted. If you prefer an associative array, set this value to `array` or anything else.
+- type: `Default` reply type is `json` formatted. If you prefer an
+  associative array, set this value to `array` or anything else (it
+  isn't checked).
 
 ## Reply example
 
@@ -175,8 +177,13 @@ Most fields are self explaining, but keep in mind that:
 - `found` true means that we actually got information for this VAT ID
 - `errors` is false if no errors or array with keys `code` and `msg` if there was a service error
 - `dateShown`, `regDate` and `stopDate` are `DateTime` objects
-- `stopDate` will be false if the VAT ID has not stopped its business
-- Activities are sorted per type and then per code
+- `regDate` will be false if the VAT ID belongs to old (not active)
+  business (reply was null)
+- `stopDate` will be false if the VAT ID has not stopped its business or
+  belongs to old business with no stop date available
+- `activities` will be false if there are no data available (old stopped
+  business)
+- `activities` are sorted per type and then per code
 
 ## That's all!
 I hope you find it useful like I did. If you have any proposals or problems, feel free to contact me!

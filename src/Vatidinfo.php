@@ -14,9 +14,9 @@ namespace Liagkos\Taxis;
  * @link        https://github.com/liagkos/vatidinfo
  *
  * @author      Athanasios Liagkos me@nasos.work
- * @copyright   2018
+ * @copyright   2018-2019
  * @license     MIT
- * @version     1.0.0
+ * @version     1.0.3
  *
  * @category    Class
  */
@@ -94,7 +94,6 @@ class Vatidinfo
      *
      * @param array  $params    [afmFrom=>VAT ID of caller, afmFor=>VAT ID to look for,
      *                          lookDate=>Get info for a specific date YYYY-MM-DD (new in v2), method=>Method date/nodate/info
-     * @param string $type      Reply type json or array
      *
      * @return array|string     Array of results or false for SOAP error
      *
@@ -109,7 +108,7 @@ class Vatidinfo
 
         // if afmFrom is omitted, current user is supposed to be the caller
         // if lookDate is omitted, today is the reference date
-        if ($params['method'] == 'query') {
+        if ($params['method'] === 'query') {
             $soapMethod = 'rgWsPublic2AfmMethod';
             $paramsSOAP = [
                 'afm_called_by'  => $params['afmFrom'] ?? '',
@@ -124,7 +123,7 @@ class Vatidinfo
 
         // Success = SOAP success, regardless of the reply of GSIS
         $result['success'] = true;
-        $vars              = $params['method'] == 'query' ? ['INPUT_REC' => $paramsSOAP] : null;
+        $vars              = $params['method'] === 'query' ? ['INPUT_REC' => $paramsSOAP] : null;
 
         try {
             $response = $this->objClient->$soapMethod($vars);
@@ -138,14 +137,14 @@ class Vatidinfo
         }
 
         if ($result['success']) {
-            if ($params['method'] == 'info') {
+            if ($params['method'] === 'info') {
                 $result['data'] = $response->result;
             } else {
                 $result['data'] = $this->parseReply($response->result->rg_ws_public2_result_rtType, $params['separator']);
             }
         }
 
-        return $params['type'] == 'json' ? json_encode($result, JSON_UNESCAPED_UNICODE) : $result;
+        return $params['type'] === 'json' ? json_encode($result, JSON_UNESCAPED_UNICODE) : $result;
     }
 
     /**
@@ -162,7 +161,7 @@ class Vatidinfo
     {
         $parsed = array();
         // found true = data found for VAT ID, false = error (password, vatid, etc)
-        $parsed['found']   = is_null($reply->error_rec->error_code);
+        $parsed['found']   = $reply->error_rec->error_code === null;
         $parsed['queryid'] = $reply->call_seq_id;
         $parsed['errors']  = $parsed['found'] ? false :
             [
@@ -198,16 +197,26 @@ class Vatidinfo
                 'zip'         => $reply->basic_rec->postal_zip_code
             ],
             'isWhat'      => trim($reply->basic_rec->i_ni_flag_descr),
-            'isCompany'   => trim($reply->basic_rec->i_ni_flag_descr) != 'ΦΠ',
+            'isCompany'   => trim($reply->basic_rec->i_ni_flag_descr) !== 'ΦΠ',
             'companyType' => trim($reply->basic_rec->legal_status_descr),
-            'isActive'    => $reply->basic_rec->deactivation_flag == '1',
+            'isActive'    => $reply->basic_rec->deactivation_flag === '1',
             'isActiveTxt' => trim($reply->basic_rec->deactivation_flag_descr),
             'type'        => trim($reply->basic_rec->firm_flag_descr),
-            'regDate'     => new \DateTime($reply->basic_rec->regist_date),
-            'stopDate'    => !is_null($reply->basic_rec->stop_date) ? new \DateTime($reply->basic_rec->stop_date) : false,
-            'normalVat'   => $reply->basic_rec->normal_vat_system_flag == 'Y',
-            'activities'  => $this->parseActivities($reply->firm_act_tab, $separator)
+            'regDate'     => $reply->basic_rec->regist_date !== null ? new \DateTime($reply->basic_rec->regist_date) : false,
+            'stopDate'    => $reply->basic_rec->stop_date !== null ? new \DateTime($reply->basic_rec->stop_date) : false,
+            'normalVat'   => $reply->basic_rec->normal_vat_system_flag === 'Y',
+            'activities'  => isset($reply->firm_act_tab) ? $this->parseActivities($reply->firm_act_tab, $separator) : false
         ];
+
+        // All address fields are null in case of stopped business activity
+        if (
+            $parsed['data']['address']['street'] === null &&
+            $parsed['data']['address']['number'] === ''   &&
+            $parsed['data']['address']['city']   === null &&
+            $parsed['data']['address']['zip']    === null
+        ) {
+            $parsed['data']['address'] = false;
+        }
 
         return $parsed;
     }
@@ -278,7 +287,7 @@ class Vatidinfo
     }
 
     /**
-     * Fromat activity code in groups of 2 digits
+     * Format activity code in groups of 2 digits
      * separated by $separator
      *
      * @param $activity  int     Activity xxxxxxxx
