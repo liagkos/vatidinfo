@@ -237,11 +237,11 @@ class Vatidinfo
             // Single activity
             $parsed[$activities->item->firm_act_kind] = [
                 'descr' => $activities->item->firm_act_kind_descr,
-                'items' => [
+                'items' => [[
                     'code' => $activities->item->firm_act_code,
                     'descr' => $activities->item->firm_act_descr,
                     'formatted' => $this->formatActivity($activities->item->firm_act_code, $separator)
-                ]
+                ]]
             ];
         } else {
             // Multiple activities
