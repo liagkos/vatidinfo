@@ -274,7 +274,7 @@ class Vatidinfo
                 foreach ($activityPerCode as $code => $codeValues) {
                     if ($codeValues['type'] == $type) {
                         $items[] = [
-                            'code'      => $code,
+                            'code'      => str_pad($code, 8, '0', STR_PAD_LEFT),
                             'descr'     => $codeValues['descr'],
                             'formatted' => $codeValues['formatted']
                         ];
