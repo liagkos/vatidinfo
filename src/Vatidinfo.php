@@ -209,13 +209,15 @@ class Vatidinfo
         ];
 
         // All address fields are null in case of stopped business activity
-        if (
-            $parsed['data']['address']['street'] === null &&
-            $parsed['data']['address']['number'] === ''   &&
-            $parsed['data']['address']['city']   === null &&
-            $parsed['data']['address']['zip']    === null
-        ) {
-            $parsed['data']['address'] = false;
+        if ($parsed['found']) {
+            if (
+                $parsed['data']['address']['street'] === null &&
+                $parsed['data']['address']['number'] === ''   &&
+                $parsed['data']['address']['city']   === null &&
+                $parsed['data']['address']['zip']    === null
+            ) {
+                $parsed['data']['address'] = false;
+            }
         }
 
         return $parsed;
